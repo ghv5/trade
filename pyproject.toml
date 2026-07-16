@@ -1,0 +1,10 @@
+[project]
+name = "trade-workspace"
+version = "0.1.0"
+description = "vn.py A-share quantitative trading workspace"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = ["."]

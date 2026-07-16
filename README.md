@@ -15,3 +15,29 @@
 - `docs/`：环境、数据、交易流程文档
 - `scripts/`：数据导入和辅助脚本
 - `data/`：本地行情数据目录，默认不提交 Git
+
+## 快速开始
+
+```bash
+conda env create -f environment.yml
+conda activate trade-vnpy
+python -m pytest
+```
+
+Mac 上安装 vn.py 前需要先安装 TA-Lib 系统库：
+
+```bash
+brew install ta-lib
+```
+
+通达信 `.day` 文件可先 dry-run 检查：
+
+```bash
+python scripts/import_tdx_day.py data/tdx/vipdoc/sh/lday/sh600000.day --dry-run
+```
+
+确认无误后再写入 vn.py 数据库：
+
+```bash
+python scripts/import_tdx_day.py data/tdx/vipdoc/sh/lday/sh600000.day --save-vnpy
+```

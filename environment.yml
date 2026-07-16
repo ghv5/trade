@@ -1,0 +1,17 @@
+name: trade-vnpy
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - numpy=1.26.4
+  - pytest
+  - pip:
+      - ta-lib
+      - vnpy
+      - vnpy_ctastrategy
+      - vnpy_ctabacktester
+      - vnpy_datamanager
+      - vnpy_sqlite
+      - vnpy_rqdata
