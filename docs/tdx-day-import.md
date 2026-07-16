@@ -4,6 +4,9 @@
 
 - 上海：`vipdoc/sh/lday/sh600000.day`
 - 深圳：`vipdoc/sz/lday/sz000001.day`
+- 北交所：`vipdoc/bj/lday/bj920578.day`
+
+当前本地目录也兼容 `vipdoc/hsjday/{sh,sz,bj}/lday/*.day` 这种层级。
 
 本仓库默认忽略 `data/` 和 `tdx/`，请把本地行情文件放在这些目录下，避免误提交。
 
@@ -25,9 +28,30 @@ python scripts/import_tdx_day.py data/tdx/vipdoc/sh/lday/sh600000.day --save-vnp
 
 - `sh` -> `SSE`
 - `sz` -> `SZSE`
+- `bj` -> `BSE`
 
 如果文件名不是通达信标准格式，可以显式指定：
 
 ```bash
 python scripts/import_tdx_day.py ./some.day --symbol 600000 --exchange SSE --save-vnpy
+```
+
+## 批量扫描
+
+先扫描整个目录，确认数据能解析：
+
+```bash
+python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run
+```
+
+如果只想抽样：
+
+```bash
+python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run --limit 20
+```
+
+脚本会输出总文件数、总 K 线数、起止日期、解析失败数、价格异常文件数和零成交记录数。质量报告可以写到本地 `reports/`，该目录默认不提交：
+
+```bash
+python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run --report reports/tdx_day_quality.json
 ```

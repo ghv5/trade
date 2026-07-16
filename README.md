@@ -36,6 +36,12 @@ brew install ta-lib
 python scripts/import_tdx_day.py data/tdx/vipdoc/sh/lday/sh600000.day --dry-run
 ```
 
+也可以扫描整个通达信日线目录：
+
+```bash
+python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run
+```
+
 确认无误后再写入 vn.py 数据库：
 
 ```bash

@@ -24,6 +24,7 @@ def make_record(date, open_price, high_price, low_price, close_price, turnover, 
 def test_infer_symbol_exchange_from_standard_tdx_name():
     assert infer_symbol_exchange(Path("sh600000.day")) == ("600000", "SSE")
     assert infer_symbol_exchange(Path("sz000001.day")) == ("000001", "SZSE")
+    assert infer_symbol_exchange(Path("bj920578.day")) == ("920578", "BSE")
 
 
 def test_parse_record_converts_tdx_prices_and_date():

@@ -16,6 +16,7 @@ TDX_DAY_STRUCT = struct.Struct("<IIIIIfII")
 EXCHANGE_BY_PREFIX = {
     "sh": "SSE",
     "sz": "SZSE",
+    "bj": "BSE",
 }
 
 
@@ -122,7 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Import Tongdaxin .day bars into vn.py database.")
     parser.add_argument("path", type=Path, help="Path to a Tongdaxin .day file.")
     parser.add_argument("--symbol", help="Security symbol, for example 600000.")
-    parser.add_argument("--exchange", choices=["SSE", "SZSE"], help="vn.py exchange code.")
+    parser.add_argument("--exchange", choices=["SSE", "SZSE", "BSE"], help="vn.py exchange code.")
     parser.add_argument("--dry-run", action="store_true", help="Parse and print summary without writing database.")
     parser.add_argument("--save-vnpy", action="store_true", help="Write parsed bars into vn.py database.")
     return parser
