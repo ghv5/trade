@@ -1,7 +1,14 @@
 from datetime import datetime
 
 from scripts.import_tdx_day import TdxDailyBar
-from scripts.import_tdx_directory import build_directory_report, has_invalid_price, has_ohlc_error, summarize_file
+from scripts.import_tdx_directory import (
+    build_directory_report,
+    has_invalid_price,
+    has_ohlc_error,
+    is_a_stock_path,
+    is_a_stock_symbol,
+    summarize_file,
+)
 
 
 def make_bar(symbol="600000", exchange="SSE", close_price=10, volume=100):
@@ -48,3 +55,24 @@ def test_build_directory_report_aggregates_file_reports(tmp_path):
     assert report.start == "2026-07-16"
     assert report.end == "2026-07-16"
     assert report.zero_volume_records == 1
+
+
+def test_a_stock_filter_keeps_stock_codes_and_excludes_indexes_funds_b_shares():
+    assert is_a_stock_symbol("600000", "SSE")
+    assert is_a_stock_symbol("688001", "SSE")
+    assert is_a_stock_symbol("000001", "SZSE")
+    assert is_a_stock_symbol("300001", "SZSE")
+    assert is_a_stock_symbol("920578", "BSE")
+
+    assert not is_a_stock_symbol("000001", "SSE")
+    assert not is_a_stock_symbol("399001", "SZSE")
+    assert not is_a_stock_symbol("200012", "SZSE")
+    assert not is_a_stock_symbol("510300", "SSE")
+
+
+def test_a_stock_filter_uses_tdx_filename_prefixes():
+    assert is_a_stock_path("sh600000.day")
+    assert is_a_stock_path("sz300001.day")
+    assert is_a_stock_path("bj920578.day")
+    assert not is_a_stock_path("sh000001.day")
+    assert not is_a_stock_path("sz399001.day")

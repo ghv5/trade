@@ -5,10 +5,10 @@ channels:
 dependencies:
   - python=3.10
   - pip
-  - numpy=1.26.4
+  - numpy>=2.2.3
   - pytest
+  - ta-lib
   - pip:
-      - ta-lib
       - vnpy
       - vnpy_ctastrategy
       - vnpy_ctabacktester

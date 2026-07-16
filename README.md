@@ -42,6 +42,8 @@ python scripts/import_tdx_day.py data/tdx/vipdoc/sh/lday/sh600000.day --dry-run
 python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run
 ```
 
+目录导入默认只处理 A 股股票代码；如需扫描全部 `.day` 文件，可加 `--market all`。
+
 确认无误后再写入 vn.py 数据库：
 
 ```bash

@@ -55,3 +55,15 @@ python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run --limit 20
 ```bash
 python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run --report reports/tdx_day_quality.json
 ```
+
+默认只处理 A 股股票代码：
+
+- 上海：`600`、`601`、`603`、`605`、`688`、`689`
+- 深圳：`000`、`001`、`002`、`003`、`300`、`301`、`302`
+- 北交所：`43`、`83`、`87`、`88`、`92`
+
+指数、基金、债券、B 股等文件会被跳过。如果确实要扫描全部 `.day` 文件，使用：
+
+```bash
+python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run --market all
+```

@@ -10,9 +10,16 @@ from datetime import datetime
 from pathlib import Path
 
 try:
-    from scripts.import_tdx_day import TdxDailyBar, parse_day_file, save_to_vnpy
+    from scripts.import_tdx_day import TdxDailyBar, infer_symbol_exchange, parse_day_file, save_to_vnpy
 except ModuleNotFoundError:
-    from import_tdx_day import TdxDailyBar, parse_day_file, save_to_vnpy
+    from import_tdx_day import TdxDailyBar, infer_symbol_exchange, parse_day_file, save_to_vnpy
+
+
+A_STOCK_PREFIXES = {
+    "SSE": ("600", "601", "603", "605", "688", "689"),
+    "SZSE": ("000", "001", "002", "003", "300", "301", "302"),
+    "BSE": ("43", "83", "87", "88", "92"),
+}
 
 
 @dataclass(frozen=True)
@@ -32,6 +39,8 @@ class FileReport:
 @dataclass(frozen=True)
 class DirectoryReport:
     root: str
+    scanned_files: int
+    skipped_files: int
     files: int
     parsed_files: int
     failed_files: int
@@ -46,6 +55,19 @@ class DirectoryReport:
 
 def iter_day_files(root: Path) -> list[Path]:
     return sorted(path for path in root.rglob("*.day") if path.is_file())
+
+
+def is_a_stock_symbol(symbol: str, exchange: str) -> bool:
+    prefixes = A_STOCK_PREFIXES.get(exchange, ())
+    return symbol.startswith(prefixes)
+
+
+def is_a_stock_path(path: Path | str) -> bool:
+    try:
+        symbol, exchange = infer_symbol_exchange(Path(path))
+    except ValueError:
+        return False
+    return is_a_stock_symbol(symbol, exchange)
 
 
 def has_invalid_price(bar: TdxDailyBar) -> bool:
@@ -86,7 +108,12 @@ def summarize_file(path: Path, bars: list[TdxDailyBar], root: Path) -> FileRepor
     )
 
 
-def build_directory_report(root: Path, file_reports: list[FileReport]) -> DirectoryReport:
+def build_directory_report(
+    root: Path,
+    file_reports: list[FileReport],
+    scanned_files: int | None = None,
+    skipped_files: int = 0,
+) -> DirectoryReport:
     parsed_reports = [report for report in file_reports if report.error is None]
     failures = [report for report in file_reports if report.error is not None]
     starts = [datetime.strptime(report.start, "%Y-%m-%d") for report in parsed_reports if report.start]
@@ -94,6 +121,8 @@ def build_directory_report(root: Path, file_reports: list[FileReport]) -> Direct
 
     return DirectoryReport(
         root=str(root),
+        scanned_files=len(file_reports) if scanned_files is None else scanned_files,
+        skipped_files=skipped_files,
         files=len(file_reports),
         parsed_files=len(parsed_reports),
         failed_files=len(failures),
@@ -118,6 +147,8 @@ def write_report(path: Path, directory_report: DirectoryReport, file_reports: li
 
 def print_summary(report: DirectoryReport) -> None:
     print(f"root: {report.root}")
+    print(f"scanned_files: {report.scanned_files}")
+    print(f"skipped_files: {report.skipped_files}")
     print(f"files: {report.files}")
     print(f"parsed_files: {report.parsed_files}")
     print(f"failed_files: {report.failed_files}")
@@ -138,6 +169,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("root", type=Path, help="Root directory containing .day files.")
     parser.add_argument("--dry-run", action="store_true", help="Scan and print summary without writing database.")
     parser.add_argument("--save-vnpy", action="store_true", help="Write parsed bars into vn.py database.")
+    parser.add_argument(
+        "--market",
+        choices=["a-stock", "all"],
+        default="a-stock",
+        help="File universe to process. Defaults to A-share stocks only.",
+    )
     parser.add_argument("--limit", type=int, help="Limit number of files for a sample run.")
     parser.add_argument("--report", type=Path, help="Write a JSON quality report.")
     return parser
@@ -150,7 +187,8 @@ def main() -> int:
     if not args.dry_run and not args.save_vnpy:
         parser.error("Choose --dry-run or --save-vnpy.")
 
-    files = iter_day_files(args.root)
+    all_files = iter_day_files(args.root)
+    files = all_files if args.market == "all" else [path for path in all_files if is_a_stock_path(path)]
     if args.limit is not None:
         files = files[: args.limit]
 
@@ -177,7 +215,12 @@ def main() -> int:
                 )
             )
 
-    directory_report = build_directory_report(args.root, file_reports)
+    directory_report = build_directory_report(
+        args.root,
+        file_reports,
+        scanned_files=len(all_files),
+        skipped_files=len(all_files) - len(files),
+    )
     print_summary(directory_report)
 
     if args.report:
