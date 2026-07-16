@@ -49,3 +49,10 @@ python scripts/import_tdx_directory.py data/tdx/vipdoc --dry-run
 ```bash
 python scripts/import_tdx_day.py data/tdx/vipdoc/sh/lday/sh600000.day --save-vnpy
 ```
+
+启动 vn.py 图形界面：
+
+```bash
+conda activate trade-vnpy
+python scripts/launch_vntrader.py
+```

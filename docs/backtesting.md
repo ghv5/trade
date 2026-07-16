@@ -48,7 +48,7 @@ python scripts/run_backtest.py \
 
 ```bash
 conda activate trade-vnpy
-vntrader
+python scripts/launch_vntrader.py
 ```
 
 打开后检查：
@@ -56,6 +56,12 @@ vntrader
 - DataManager 是否能看到本地日线数据。
 - CTA Backtester 是否能选择 `600000.SSE`、`000001.SZSE` 等标的。
 - 回测参数的手续费、滑点、合约乘数、最小价格变动是否符合你的假设。
+
+如果只想验证 GUI 依赖是否完整，不打开窗口：
+
+```bash
+python scripts/launch_vntrader.py --check
+```
 
 ## 注意
 
