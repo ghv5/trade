@@ -56,3 +56,9 @@ python scripts/import_tdx_day.py data/tdx/vipdoc/sh/lday/sh600000.day --save-vnp
 conda activate trade-vnpy
 python scripts/launch_vntrader.py
 ```
+
+运行尾盘动量/反转策略回测：
+
+```bash
+python scripts/run_backtest.py --strategy tail-momentum-reversal --vt-symbol 600000.SSE --start 2020-01-01 --end 2026-07-16
+```

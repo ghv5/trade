@@ -21,6 +21,18 @@ DEFAULT_SETTING = {
     "fixed_size": 100,
 }
 
+TAIL_MOMENTUM_REVERSAL_SETTING = {
+    "trend_window": 26,
+    "momentum_window": 20,
+    "reversal_window": 5,
+    "min_tail_position": 0.65,
+    "min_pullback": 0.03,
+    "stop_loss": 0.06,
+    "take_profit": 0.12,
+    "max_holding_days": 10,
+    "fixed_size": 100,
+}
+
 
 def parse_date(value: str) -> datetime:
     return datetime.strptime(value, "%Y-%m-%d")
@@ -40,6 +52,7 @@ def run_backtest(args: argparse.Namespace) -> dict[str, Any]:
     from vnpy_ctastrategy.backtesting import BacktestingEngine
 
     from strategies.double_ma_a_share import DoubleMaAShareStrategy
+    from strategies.tail_momentum_reversal import TailMomentumReversalStrategy
 
     engine = BacktestingEngine()
     engine.set_parameters(
@@ -54,12 +67,28 @@ def run_backtest(args: argparse.Namespace) -> dict[str, Any]:
         capital=args.capital,
     )
 
-    setting = {
-        "fast_window": args.fast_window,
-        "slow_window": args.slow_window,
-        "fixed_size": args.fixed_size,
-    }
-    engine.add_strategy(DoubleMaAShareStrategy, setting)
+    if args.strategy == "double-ma":
+        strategy_class = DoubleMaAShareStrategy
+        setting = {
+            "fast_window": args.fast_window,
+            "slow_window": args.slow_window,
+            "fixed_size": args.fixed_size,
+        }
+    else:
+        strategy_class = TailMomentumReversalStrategy
+        setting = {
+            "trend_window": args.trend_window,
+            "momentum_window": args.momentum_window,
+            "reversal_window": args.reversal_window,
+            "min_tail_position": args.min_tail_position,
+            "min_pullback": args.min_pullback,
+            "stop_loss": args.stop_loss,
+            "take_profit": args.take_profit,
+            "max_holding_days": args.max_holding_days,
+            "fixed_size": args.fixed_size,
+        }
+
+    engine.add_strategy(strategy_class, setting)
     engine.load_data()
     engine.run_backtesting()
     engine.calculate_result()
@@ -67,6 +96,7 @@ def run_backtest(args: argparse.Namespace) -> dict[str, Any]:
 
     return {
         "vt_symbol": args.vt_symbol,
+        "strategy": args.strategy,
         "start": args.start,
         "end": args.end,
         "setting": setting,
@@ -89,6 +119,7 @@ def print_summary(result: dict[str, Any]) -> None:
     ]
 
     print(f"symbol: {result['vt_symbol']}")
+    print(f"strategy: {result['strategy']}")
     print(f"range: {result['start']} -> {result['end']}")
     print(f"setting: {result['setting']}")
     for key in keys:
@@ -97,12 +128,26 @@ def print_summary(result: dict[str, Any]) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run a minimal CTA backtest for local A-share bars.")
+    parser.add_argument(
+        "--strategy",
+        choices=["double-ma", "tail-momentum-reversal"],
+        default="double-ma",
+        help="Strategy to run.",
+    )
     parser.add_argument("--vt-symbol", default="600000.SSE", help="vn.py symbol, for example 600000.SSE.")
     parser.add_argument("--start", default="2020-01-01", help="Start date in YYYY-MM-DD.")
     parser.add_argument("--end", default="2026-07-16", help="End date in YYYY-MM-DD.")
     parser.add_argument("--fast-window", type=int, default=DEFAULT_SETTING["fast_window"])
     parser.add_argument("--slow-window", type=int, default=DEFAULT_SETTING["slow_window"])
     parser.add_argument("--fixed-size", type=int, default=DEFAULT_SETTING["fixed_size"])
+    parser.add_argument("--trend-window", type=int, default=TAIL_MOMENTUM_REVERSAL_SETTING["trend_window"])
+    parser.add_argument("--momentum-window", type=int, default=TAIL_MOMENTUM_REVERSAL_SETTING["momentum_window"])
+    parser.add_argument("--reversal-window", type=int, default=TAIL_MOMENTUM_REVERSAL_SETTING["reversal_window"])
+    parser.add_argument("--min-tail-position", type=float, default=TAIL_MOMENTUM_REVERSAL_SETTING["min_tail_position"])
+    parser.add_argument("--min-pullback", type=float, default=TAIL_MOMENTUM_REVERSAL_SETTING["min_pullback"])
+    parser.add_argument("--stop-loss", type=float, default=TAIL_MOMENTUM_REVERSAL_SETTING["stop_loss"])
+    parser.add_argument("--take-profit", type=float, default=TAIL_MOMENTUM_REVERSAL_SETTING["take_profit"])
+    parser.add_argument("--max-holding-days", type=int, default=TAIL_MOMENTUM_REVERSAL_SETTING["max_holding_days"])
     parser.add_argument("--rate", type=float, default=0.0003, help="Commission rate.")
     parser.add_argument("--slippage", type=float, default=0.01, help="Price slippage.")
     parser.add_argument("--size", type=float, default=1, help="Contract size.")

@@ -20,6 +20,16 @@ conda activate trade-vnpy
 python scripts/run_backtest.py --vt-symbol 600000.SSE --start 2020-01-01 --end 2026-07-16
 ```
 
+运行尾盘动量/反转策略：
+
+```bash
+python scripts/run_backtest.py \
+  --strategy tail-momentum-reversal \
+  --vt-symbol 600000.SSE \
+  --start 2020-01-01 \
+  --end 2026-07-16
+```
+
 输出 JSON 报告：
 
 ```bash
@@ -37,12 +47,26 @@ python scripts/run_backtest.py \
 当前仓库策略：
 
 - `strategies/double_ma_a_share.py`：A 股日线双均线策略，只做多，不做空。
+- `strategies/tail_momentum_reversal.py`：尾盘动量/反转策略的日线模拟版本，只做多，不做空。
 
-默认参数：
+双均线默认参数：
 
 - `fast_window=10`
 - `slow_window=20`
 - `fixed_size=100`
+
+尾盘动量/反转默认参数：
+
+- `trend_window=26`：趋势过滤，收盘价在 26 日均线上方才考虑买入。
+- `momentum_window=20`：向上突破过去 20 日高点视为动量触发。
+- `reversal_window=5`：5 日回调后，如果尾盘收在日内上半区并重新转强，视为反转触发。
+- `min_tail_position=0.65`：收盘价至少处在当日振幅上方 65%。
+- `min_pullback=0.03`：反转触发要求最近 5 日至少回调 3%。
+- `stop_loss=0.06`：6% 止损。
+- `take_profit=0.12`：12% 止盈。
+- `max_holding_days=10`：最多持有 10 根日线。
+
+这个策略目前只使用日线数据近似尾盘状态，适合验证研究框架；如果后续导入 1 分钟或 5 分钟数据，再把 14:30 之后的真实分时确认接入。
 
 ## vn.py 图形界面
 
